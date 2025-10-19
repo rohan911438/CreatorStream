@@ -8,30 +8,47 @@ const Landing = () => {
 
   const features = [
     {
-      icon: TrendingUp,
-      title: "Real-Time Tracking",
-      description: "Monitor your NFT royalties as they come in with live updates and detailed analytics.",
+      icon: Zap,
+      title: "Automatic Royalty Distribution",
+      description: "Smart contracts automatically distribute royalties to all collaborators based on pre-set splits. No manual transfers, no delays.",
     },
     {
       icon: Users,
-      title: "Royalty Splits",
-      description: "Automatically distribute earnings among collaborators with customizable split configurations.",
+      title: "Collaborator Management",
+      description: "Easily add, remove, or adjust collaborator splits. Manage team permissions and view individual earnings in real-time.",
     },
     {
       icon: BarChart3,
-      title: "Advanced Analytics",
-      description: "Gain insights with comprehensive charts and reports on your earnings over time.",
+      title: "Analytics Dashboard",
+      description: "Comprehensive charts and insights showing earnings over time, top-performing collections, and detailed transaction history.",
     },
     {
-      icon: Shield,
-      title: "Secure & Trustworthy",
-      description: "Built with industry-leading security standards to protect your assets and data.",
+      icon: Wallet,
+      title: "Marketplace Integration",
+      description: "Seamlessly connect with major NFT marketplaces. Track royalties from OpenSea, Rarible, and other platforms in one place.",
+    },
+  ];
+
+  const benefits = [
+    {
+      title: "Complete Transparency",
+      description: "Every transaction is recorded on-chain. View detailed breakdowns of all earnings and splits in real-time.",
     },
     {
-      icon: Zap,
-      title: "Instant Payouts",
-      description: "Receive your royalties instantly with automated smart contract execution.",
+      title: "Save Time",
+      description: "Eliminate hours of manual tracking and payment distribution. Focus on creating while we handle the finances.",
     },
+    {
+      title: "Never Miss a Royalty",
+      description: "Automated tracking ensures you capture every royalty payment across all connected marketplaces.",
+    },
+  ];
+
+  const partners = [
+    { name: "Flow", logo: "flow" },
+    { name: "Dapper", logo: "dapper" },
+    { name: "Disney", logo: "disney" },
+    { name: "NBA", logo: "nba" },
   ];
 
   return (
@@ -93,23 +110,23 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* How It Works / Features Section */}
       <section className="py-20 px-4 relative">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">
-              Built for Creators
+              How It Works
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need to manage and grow your NFT royalty income
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="glass-card p-8 rounded-xl hover:scale-105 transition-transform duration-300 group"
+                className="glass-card p-8 rounded-xl hover:scale-105 transition-transform duration-300 group animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="bg-primary/10 w-14 h-14 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -117,6 +134,52 @@ const Landing = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 px-4 bg-muted/20">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">
+              Why Creators Choose CreatorStream
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Built by creators, for creators
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <div
+                key={index}
+                className="glass-card p-8 rounded-xl text-center group hover:scale-105 transition-transform duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <h3 className="text-2xl font-bold mb-4 gradient-text">{benefit.title}</h3>
+                <p className="text-muted-foreground">{benefit.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Partners Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Trusted By Industry Leaders</p>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-12 max-w-4xl mx-auto opacity-60">
+            {partners.map((partner, index) => (
+              <div
+                key={index}
+                className="text-2xl font-bold text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {partner.name}
               </div>
             ))}
           </div>
@@ -150,9 +213,43 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8 px-4 mt-20">
-        <div className="container mx-auto text-center text-muted-foreground">
-          <p>© 2024 CreatorStream. All rights reserved.</p>
+      <footer className="border-t border-border/50 py-12 px-4 mt-20">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4 gradient-text">CreatorStream</h3>
+              <p className="text-sm text-muted-foreground">
+                Automate and track your NFT royalties with ease.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Roadmap</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#about" className="hover:text-foreground transition-colors">About</a></li>
+                <li><a href="#docs" className="hover:text-foreground transition-colors">Docs</a></li>
+                <li><a href="#contact" className="hover:text-foreground transition-colors">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Community</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Discord</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Twitter</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border/50 pt-8 text-center text-sm text-muted-foreground">
+            <p>© 2024 CreatorStream. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
