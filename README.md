@@ -85,3 +85,21 @@ You can show a live Dune chart inside the Analytics page in two ways:
 Notes:
 - Dune public embeds do not require an API key.
 - If you later enable Beezie AI predictions, we can add an environment variable like `VITE_BEEZIE_API_KEY` and a small server proxy if needed to keep keys private.
+
+## Beezie AI Predictions (Gemini)
+
+To enable AI predictions in the Analytics page:
+
+1) Create a `.env` file at the project root (same level as package.json) with:
+
+```
+GEMINI_API_KEY=YOUR_KEY_HERE
+```
+
+2) Start both the server and the frontend together:
+
+```
+npm run dev:full
+```
+
+This uses the backend proxy at `/api/beezie/predict`, so your key remains server-side.

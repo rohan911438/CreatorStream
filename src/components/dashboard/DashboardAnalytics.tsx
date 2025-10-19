@@ -7,6 +7,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
+import { useBeeziePredict } from "@/lib/beezie";
 
 export function DashboardAnalytics() {
   // Dune embed URL from env or local preference
@@ -260,12 +261,7 @@ export function DashboardAnalytics() {
             <CardTitle>Beezie AI Predictions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-center text-muted-foreground p-4">
-              <div>
-                <div className="font-medium mb-1">AI prediction placeholder</div>
-                <div className="text-xs">No extra API key needed for Dune embeds. For Beezie predictions, we can enable a key when you're ready.</div>
-              </div>
-            </div>
+            <BeezieCard />
           </CardContent>
         </Card>
       </div>
@@ -346,6 +342,48 @@ export function DashboardAnalytics() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function BeezieCard() {
+  const { mutateAsync, isPending, isError, error, data } = useBeeziePredict();
+  const [prompt, setPrompt] = useState<string>("");
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <Input
+          placeholder="Ask Beezie to predict next week’s top-earning NFT segment…"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter' && prompt.trim() && !isPending) {
+              await mutateAsync({ prompt: prompt.trim() }).catch(() => {});
+            }
+          }}
+        />
+        <Button
+          disabled={!prompt.trim() || isPending}
+          onClick={async () => {
+            await mutateAsync({ prompt: prompt.trim() }).catch(() => {});
+          }}
+        >
+          {isPending ? 'Predicting…' : 'Predict'}
+        </Button>
+      </div>
+      <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 p-4 text-sm">
+        {isError ? (
+          <div className="text-red-500">{(error as any)?.message || 'Prediction failed'}</div>
+        ) : data?.text ? (
+          <pre className="whitespace-pre-wrap text-foreground/90">{data.text}</pre>
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground">AI prediction output will appear here</div>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Powered by Google Gemini via a secure server proxy. Set GEMINI_API_KEY in your .env.
+      </p>
     </div>
   );
 }

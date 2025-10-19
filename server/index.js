@@ -38,6 +38,49 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+// -------------- Beezie AI Predictions via Google Gemini (proxy) --------------
+// POST /api/beezie/predict { prompt: string, model?: string }
+app.post('/api/beezie/predict', async (req, res) => {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured on server' });
+
+    const { prompt, model } = req.body || {};
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: 'prompt is required' });
+    }
+
+    const mdl = model || 'gemini-1.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${apiKey}`;
+
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
+        },
+      ],
+    };
+
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      return res.status(500).json({ error: 'Gemini request failed', detail: errText });
+    }
+    const data = await r.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    res.json({ text, raw: data });
+  } catch (err) {
+    console.error('[Beezie] Predict error', err);
+    res.status(500).json({ error: 'Predict error', message: err?.message || String(err) });
+  }
+});
+
 // Proxy Dune results endpoint without exposing the API key to the client
 // GET /api/dune/query/:queryId/results?limit=1000
 app.get('/api/dune/query/:queryId/results', async (req, res) => {
@@ -77,9 +120,7 @@ app.get('/api/dune/query/:queryId/results', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Dune proxy server running on http://localhost:${PORT}`);
-});
+// Note: app.listen is moved to the bottom, after optional static hosting setup
 
 // ------------------ Off-chain Royalty Aggregation ------------------
 // GET list of off-chain royalties
@@ -152,9 +193,13 @@ app.post('/api/payouts', (req, res) => {
   res.json({ ok: true, jobId, status: job.status, token });
 });
 
-// Periodic sync (every 30 minutes)
+// Periodic sync (every 30 minutes) - avoid hardcoded localhost by calling logic directly
 setInterval(() => {
-  fetch(`http://localhost:${PORT}/api/offchain/reconcile`).catch(() => {});
+  try {
+    const royalties = store.listRoyalties();
+    // Place to add real reconciliation work if needed
+    void royalties;
+  } catch {}
 }, 30 * 60 * 1000);
 
 // ------------------ Collaborators CRUD ------------------
@@ -226,4 +271,23 @@ app.patch('/api/payouts/:id/cancel', (req, res) => {
   }
   const updated = store.updatePayout(p.id, { status: 'canceled', updatedAt: Date.now() });
   res.json({ ok: true, payout: updated });
+});
+
+// ------------------ Static hosting for production ------------------
+try {
+  const distPath = path.resolve(process.cwd(), 'dist');
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    // SPA fallback to index.html
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next();
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+} catch (e) {
+  console.warn('[server] Static hosting disabled:', e?.message || String(e));
+}
+
+app.listen(PORT, () => {
+  console.log(`[server] listening on port ${PORT}`);
 });

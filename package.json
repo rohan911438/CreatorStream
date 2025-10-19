@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "server": "node ./server/index.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "serve:full": "npm run build && node ./server/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
