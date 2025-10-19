@@ -3,8 +3,23 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { mockEarnings, mockNFTs } from "@/lib/data";
 import { useDuneQuery } from "@/lib/dune";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
 
 export function DashboardAnalytics() {
+  // Dune embed URL from env or local preference
+  const duneEmbedFromEnv = (import.meta as any)?.env?.VITE_DUNE_EMBED_URL as string | undefined;
+  const [duneEmbedUrl, setDuneEmbedUrl] = useState<string>("");
+  const [draftUrl, setDraftUrl] = useState<string>("");
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem("duneEmbedUrl") : null;
+    const initial = saved || duneEmbedFromEnv || "";
+    setDuneEmbedUrl(initial);
+    setDraftUrl(initial);
+  }, [duneEmbedFromEnv]);
   const earningsData = [
     { month: "Jan", earnings: 4200, volume: 12 },
     { month: "Feb", earnings: 5100, volume: 15 },
@@ -190,9 +205,44 @@ export function DashboardAnalytics() {
             <CardTitle>Dune Analytics (Embed)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-muted-foreground">
-              Embed chart URL here
-            </div>
+            {duneEmbedUrl ? (
+              <AspectRatio ratio={16 / 9}>
+                <iframe
+                  src={duneEmbedUrl}
+                  title="Dune Analytics Embed"
+                  className="w-full h-full rounded-lg border border-border/50"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                />
+              </AspectRatio>
+            ) : (
+              <div className="space-y-3">
+                <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-muted-foreground">
+                  Paste a Dune embed URL below or set VITE_DUNE_EMBED_URL
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://dune.com/embeds/your-chart-id/your-viz-id"
+                    value={draftUrl}
+                    onChange={(e) => setDraftUrl(e.target.value)}
+                  />
+                  <Button
+                    onClick={() => {
+                      setDuneEmbedUrl(draftUrl);
+                      try {
+                        window.localStorage.setItem("duneEmbedUrl", draftUrl);
+                      } catch {}
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Tip: Open any Dune visualization, click Share → Embed to get the URL. No API key is required for embeds.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card className="glass-card border-border/50">
@@ -210,8 +260,11 @@ export function DashboardAnalytics() {
             <CardTitle>Beezie AI Predictions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-muted-foreground">
-              AI prediction placeholder
+            <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-center text-muted-foreground p-4">
+              <div>
+                <div className="font-medium mb-1">AI prediction placeholder</div>
+                <div className="text-xs">No extra API key needed for Dune embeds. For Beezie predictions, we can enable a key when you're ready.</div>
+              </div>
             </div>
           </CardContent>
         </Card>

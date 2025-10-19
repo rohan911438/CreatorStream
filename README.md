@@ -71,3 +71,17 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Optional: Dune Analytics Embed
+
+You can show a live Dune chart inside the Analytics page in two ways:
+
+- Set an environment variable in a `.env` file at the project root:
+
+	- `VITE_DUNE_EMBED_URL=https://dune.com/embeds/<chart-id>/<viz-id>`
+
+- Or paste the URL directly in the Analytics page UI; it will be saved in localStorage.
+
+Notes:
+- Dune public embeds do not require an API key.
+- If you later enable Beezie AI predictions, we can add an environment variable like `VITE_BEEZIE_API_KEY` and a small server proxy if needed to keep keys private.
