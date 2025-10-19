@@ -7,8 +7,9 @@ import { DashboardTransactions } from "@/components/dashboard/DashboardTransacti
 import { DashboardSplits } from "@/components/dashboard/DashboardSplits";
 import { DashboardNotifications } from "@/components/dashboard/DashboardNotifications";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
+import { DashboardPayouts } from "@/components/dashboard/DashboardPayouts";
 
-export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications";
+export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications" | "payouts";
 
 const Dashboard = () => {
   const [currentView, setCurrentView] = useState<DashboardView>("overview");
@@ -25,6 +26,8 @@ const Dashboard = () => {
         return <DashboardSplits />;
       case "notifications":
         return <DashboardNotifications />;
+      case "payouts":
+        return <DashboardPayouts />;
       default:
         return <DashboardOverview />;
     }

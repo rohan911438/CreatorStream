@@ -30,6 +30,7 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
     { id: "transactions" as DashboardView, title: "Transactions", icon: History },
     { id: "splits" as DashboardView, title: "Royalty Splits", icon: Users },
     { id: "notifications" as DashboardView, title: "Notifications", icon: Bell },
+    { id: "payouts" as DashboardView, title: "Payouts", icon: RefreshCw },
   ];
 
   return (

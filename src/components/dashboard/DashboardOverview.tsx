@@ -4,10 +4,11 @@ import { DollarSign, TrendingUp, Clock, Activity, Calendar, Users, Trophy, Gift 
 import { Badge } from "@/components/ui/badge";
 import { formatUSD, nextPayout, mockPayouts } from "@/lib/data";
 import { useOffchainRoyalties, useAddOffchainRoyalty } from "@/lib/royalties";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCreatePayout } from "@/lib/royalties";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useCollaborators } from "@/lib/collaborators";
 
 export function DashboardOverview() {
   const stats = [
@@ -66,6 +67,11 @@ export function DashboardOverview() {
   const { mutateAsync: addOffchain, isPending: addingOff } = useAddOffchainRoyalty();
   const [token, setToken] = useState<'FLOW'|'USDC'|'FROTH'>('FLOW');
   const { mutateAsync: createPayout, isPending } = useCreatePayout();
+  const { data: collabData } = useCollaborators();
+  const recipients = useMemo(() => {
+    const list = collabData?.collaborators ?? [];
+    return list.map(c => ({ wallet: c.wallet, percentage: Number(c.percentage) || 0 }));
+  }, [collabData]);
 
   return (
     <div className="p-6 md:p-8 space-y-8 animate-fade-in">
@@ -209,12 +215,15 @@ export function DashboardOverview() {
                   onClick={async () => {
                     try {
                       const amountUSD = 3421.5; // example pending amount; integrate real value later
-                      const recipients = [
-                        { wallet: "0x742d...Ab3f", percentage: 40 },
-                        { wallet: "0x8a2c...7e9d", percentage: 30 },
-                        { wallet: "0x5f1b...2c4a", percentage: 20 },
-                        { wallet: "0x1234...abcd", percentage: 10 },
-                      ];
+                      if (!recipients.length) {
+                        toast.error('No collaborators found', { description: 'Add collaborators in Royalty Splits first.' });
+                        return;
+                      }
+                      const totalPct = recipients.reduce((s,r)=>s+(r.percentage||0),0);
+                      if (Math.abs(totalPct - 100) > 0.01) {
+                        toast.error('Split total must be 100%', { description: `Current total: ${totalPct}%` });
+                        return;
+                      }
                       const res = await createPayout({ token, amountUSD, recipients });
                       toast.success(`Payout queued (${res.token})`, { description: `Job ${res.jobId}` });
                     } catch (e: any) {

@@ -2,76 +2,109 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Edit, Save } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAddCollaborator, useCollaborators, useDeleteCollaborator, useUpdateCollaborator } from "@/lib/collaborators";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export function DashboardSplits() {
-  const collaborators = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      wallet: "0x742d...Ab3f",
-      percentage: 40,
-      totalEarned: "$9,825.56",
-      role: "Lead Artist",
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      wallet: "0x8a2c...7e9d",
-      percentage: 30,
-      totalEarned: "$7,369.17",
-      role: "Developer",
-    },
-    {
-      id: 3,
-      name: "Alex Rivera",
-      wallet: "0x5f1b...2c4a",
-      percentage: 20,
-      totalEarned: "$4,912.78",
-      role: "Marketing",
-    },
-    {
-      id: 4,
-      name: "You",
-      wallet: "0x742d...Ab3f",
-      percentage: 10,
-      totalEarned: "$2,456.39",
-      role: "Project Lead",
-    },
-  ];
+  const { data, isLoading } = useCollaborators();
+  const { mutateAsync: addCollaborator, isPending: adding } = useAddCollaborator();
+  const { mutateAsync: updateCollaborator } = useUpdateCollaborator();
+  const { mutateAsync: deleteCollaborator, isPending: deleting } = useDeleteCollaborator();
+  const [form, setForm] = useState({ name: '', wallet: '', percentage: '', role: '' });
 
-  const collections = [
-    { name: "Cosmic Dreams", splits: 4, status: "Active" },
-    { name: "Digital Waves", splits: 3, status: "Active" },
-    { name: "Abstract Minds", splits: 2, status: "Paused" },
-  ];
+  const collaborators = data?.collaborators ?? [];
+  const totalPct = useMemo(() => collaborators.reduce((s, c) => s + (Number(c.percentage) || 0), 0), [collaborators]);
 
   return (
     <div className="p-6 md:p-8 space-y-8 animate-fade-in">
-      {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">Royalty Splits</h1>
           <p className="text-muted-foreground">Manage collaborator payments and revenue sharing</p>
         </div>
-        <Button variant="gradient" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Collaborator
-        </Button>
       </div>
 
-      {/* Collaborators */}
+      {/* Summary */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card className="glass-card border-border/50">
+          <CardContent className="p-6">
+            <div className="text-sm text-muted-foreground mb-2">Total Collaborators</div>
+            <div className="text-3xl font-bold gradient-text">{collaborators.length}</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card border-border/50">
+          <CardContent className="p-6">
+            <div className="text-sm text-muted-foreground mb-2">Split Total</div>
+            <div className={`text-3xl font-bold ${Math.abs(totalPct-100)<0.01 ? 'gradient-text' : 'text-red-500'}`}>{totalPct}%</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card border-border/50">
+          <CardContent className="p-6">
+            <div className="text-sm text-muted-foreground mb-2">Status</div>
+            <div className="text-3xl font-bold gradient-text">{Math.abs(totalPct-100)<0.01 ? 'Ready' : 'Fix Splits'}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add Collaborator */}
+      <Card className="glass-card border-border/50">
+        <CardHeader>
+          <CardTitle>Add Collaborator</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" value={form.name} onChange={(e)=>setForm(f=>({...f, name:e.target.value}))} placeholder="Full name" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wallet">Wallet</Label>
+              <Input id="wallet" value={form.wallet} onChange={(e)=>setForm(f=>({...f, wallet:e.target.value}))} placeholder="0x..." />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="percentage">Percentage</Label>
+              <Input id="percentage" type="number" value={form.percentage} onChange={(e)=>setForm(f=>({...f, percentage:e.target.value}))} placeholder="0-100" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Input id="role" value={form.role} onChange={(e)=>setForm(f=>({...f, role:e.target.value}))} placeholder="Artist, Dev..." />
+            </div>
+          </div>
+          <Button
+            variant="gradient"
+            className="gap-2"
+            disabled={adding}
+            onClick={async ()=>{
+              const pct = Number(form.percentage) || 0;
+              if (!form.name || !form.wallet) return toast.error('Name and wallet required');
+              if (pct <= 0 || pct > 100) return toast.error('Percentage must be between 1-100');
+              try {
+                await addCollaborator({ name: form.name, wallet: form.wallet, percentage: pct, role: form.role });
+                setForm({ name:'', wallet:'', percentage:'', role:'' });
+                toast.success('Collaborator added');
+              } catch (e:any) {
+                toast.error('Failed to add collaborator', { description: e?.message });
+              }
+            }}
+          >
+            <Plus className="h-4 w-4" /> Add Collaborator
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Collaborators List */}
       <Card className="glass-card border-border/50">
         <CardHeader>
           <CardTitle>Active Collaborators</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
+          {!isLoading && !collaborators.length && <div className="text-sm text-muted-foreground">No collaborators yet</div>}
           {collaborators.map((collab) => (
-            <div
-              key={collab.id}
-              className="flex items-center justify-between p-4 rounded-lg border border-border/30 hover:bg-muted/50 transition-colors"
-            >
+            <div key={collab.id} className="flex items-center justify-between p-4 rounded-lg border border-border/30 hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-4 flex-1">
                 <Avatar className="h-12 w-12 border-2 border-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -84,118 +117,34 @@ export function DashboardSplits() {
                   <div className="text-xs font-mono text-muted-foreground mt-1">{collab.wallet}</div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold gradient-text">{collab.percentage}%</div>
-                  <div className="text-xs text-muted-foreground">Split</div>
+                  <Input
+                    className="w-24"
+                    type="number"
+                    value={collab.percentage ?? 0}
+                    onChange={async (e)=>{
+                      const pct = Number(e.target.value)||0;
+                      try { await updateCollaborator({ id: collab.id, patch: { percentage: pct } }); } catch {}
+                    }}
+                  />
+                  <div className="text-xs text-muted-foreground text-center mt-1">%</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold">{collab.totalEarned}</div>
-                  <div className="text-xs text-muted-foreground">Total Earned</div>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={deleting}
+                  onClick={async ()=>{
+                    try { await deleteCollaborator(collab.id); toast.success('Deleted'); } catch (e:any) { toast.error('Delete failed', { description: e?.message }); }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
             </div>
           ))}
         </CardContent>
       </Card>
-
-      {/* Collections with Splits */}
-      <Card className="glass-card border-border/50">
-        <CardHeader>
-          <CardTitle>Collections with Splits</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {collections.map((collection, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 rounded-lg border border-border/30 hover:bg-muted/50 transition-colors"
-              >
-                <div>
-                  <div className="font-semibold">{collection.name}</div>
-                  <div className="text-sm text-muted-foreground">{collection.splits} collaborators</div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className={`px-3 py-1 rounded-full text-xs ${
-                    collection.status === 'Active' 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-yellow-500/10 text-yellow-500'
-                  }`}>
-                    {collection.status}
-                  </div>
-                  <Button size="sm" variant="glass">
-                    Configure
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Create New Split */}
-      <Card className="glass-card border-border/50">
-        <CardHeader>
-          <CardTitle>Create New Split Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="collection">Collection</Label>
-              <Input id="collection" placeholder="Select or enter collection name" className="glass-card border-border/50" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="wallet">Collaborator Wallet</Label>
-              <Input id="wallet" placeholder="0x..." className="glass-card border-border/50" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="percentage">Percentage (%)</Label>
-              <Input id="percentage" type="number" placeholder="0-100" className="glass-card border-border/50" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Input id="role" placeholder="e.g., Artist, Developer" className="glass-card border-border/50" />
-            </div>
-          </div>
-          <Button variant="gradient" className="gap-2">
-            <Save className="h-4 w-4" />
-            Save Configuration
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Summary */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="glass-card border-border/50">
-          <CardContent className="p-6">
-            <div className="text-sm text-muted-foreground mb-2">Total Collaborators</div>
-            <div className="text-3xl font-bold gradient-text">4</div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/50">
-          <CardContent className="p-6">
-            <div className="text-sm text-muted-foreground mb-2">Active Splits</div>
-            <div className="text-3xl font-bold gradient-text">3</div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/50">
-          <CardContent className="p-6">
-            <div className="text-sm text-muted-foreground mb-2">Total Distributed</div>
-            <div className="text-3xl font-bold gradient-text">$24,563.90</div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
