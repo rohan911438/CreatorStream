@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -77,3 +79,97 @@ app.get('/api/dune/query/:queryId/results', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Dune proxy server running on http://localhost:${PORT}`);
 });
+
+// ------------------ Off-chain Royalty Aggregation ------------------
+const DATA_DIR = path.resolve(process.cwd(), 'server', 'data');
+const OFFCHAIN_FILE = path.join(DATA_DIR, 'offchain-royalties.json');
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(OFFCHAIN_FILE)) fs.writeFileSync(OFFCHAIN_FILE, JSON.stringify({ royalties: [] }, null, 2));
+
+function readOffchain() {
+  try {
+    const raw = fs.readFileSync(OFFCHAIN_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return { royalties: [] };
+  }
+}
+
+function writeOffchain(data) {
+  fs.writeFileSync(OFFCHAIN_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET list of off-chain royalties
+app.get('/api/offchain/royalties', (_req, res) => {
+  const data = readOffchain();
+  res.json(data);
+});
+
+// POST add an off-chain royalty record
+// body: { id?, marketplace, nftId, amountUSD, txHash?, note?, dateISO }
+app.post('/api/offchain/royalties', (req, res) => {
+  const body = req.body || {};
+  const required = ['marketplace', 'nftId', 'amountUSD'];
+  for (const k of required) {
+    if (!(k in body)) return res.status(400).json({ error: `Missing field: ${k}` });
+  }
+  const data = readOffchain();
+  const record = {
+    id: body.id || `off_${Date.now()}`,
+    marketplace: body.marketplace,
+    nftId: body.nftId,
+    amountUSD: Number(body.amountUSD) || 0,
+    txHash: body.txHash || null,
+    note: body.note || null,
+    dateISO: body.dateISO || new Date().toISOString(),
+  };
+  data.royalties.push(record);
+  writeOffchain(data);
+  res.json({ ok: true, record });
+});
+
+// Aggregate on-chain and off-chain royalties
+app.get('/api/royalties/aggregate', async (_req, res) => {
+  try {
+    const data = readOffchain();
+    const offChainUSD = data.royalties.reduce((sum, r) => sum + (Number(r.amountUSD) || 0), 0);
+    // Optional: include on-chain via Dune by query id param (not required here)
+    const totalUSD = offChainUSD; // Add onChainUSD when available
+    res.json({ offChainUSD, onChainUSD: 0, totalUSD });
+  } catch (err) {
+    res.status(500).json({ error: 'Aggregation error', message: err?.message || String(err) });
+  }
+});
+
+// Reconciliation endpoint: placeholder that could fetch from Dune and match against off-chain
+app.post('/api/offchain/reconcile', async (_req, res) => {
+  try {
+    const data = readOffchain();
+    // Here you would fetch on-chain and compare; we just return counts
+    res.json({ ok: true, offChainCount: data.royalties.length, reconciledAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: 'Reconcile error', message: err?.message || String(err) });
+  }
+});
+
+// ------------------ Multi-Token Payout Support (mocked) ------------------
+// POST /api/payouts { token: 'FLOW'|'USDC'|'FROTH', amountUSD, recipients: [{wallet, percentage}] }
+app.post('/api/payouts', (req, res) => {
+  const { token, amountUSD, recipients } = req.body || {};
+  const supported = ['FLOW', 'USDC', 'FROTH'];
+  if (!supported.includes(token)) return res.status(400).json({ error: 'Unsupported token' });
+  if (typeof amountUSD !== 'number') return res.status(400).json({ error: 'amountUSD must be number' });
+  if (!Array.isArray(recipients) || recipients.length === 0) return res.status(400).json({ error: 'recipients required' });
+  const totalPct = recipients.reduce((s, r) => s + (Number(r.percentage) || 0), 0);
+  if (Math.abs(totalPct - 100) > 0.01) return res.status(400).json({ error: 'Recipients must total 100%' });
+
+  const jobId = `payout_${Date.now()}`;
+  console.log(`[PAYOUT] Job ${jobId}: token=${token} amountUSD=${amountUSD} recipients=${recipients.length}`);
+  // In production: call Flow Forte Actions here
+  res.json({ ok: true, jobId, status: 'queued', token });
+});
+
+// Periodic sync (every 30 minutes)
+setInterval(() => {
+  fetch(`http://localhost:${PORT}/api/offchain/reconcile`).catch(() => {});
+}, 30 * 60 * 1000);

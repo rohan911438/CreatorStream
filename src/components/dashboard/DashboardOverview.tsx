@@ -1,7 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, Clock, Activity, Calendar, Users, Trophy, Gift } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatUSD, nextPayout, mockPayouts } from "@/lib/data";
+import { useOffchainRoyalties, useAddOffchainRoyalty } from "@/lib/royalties";
+import { useState } from "react";
+import { useCreatePayout } from "@/lib/royalties";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 export function DashboardOverview() {
   const stats = [
@@ -56,6 +62,10 @@ export function DashboardOverview() {
   ];
 
   const next = nextPayout();
+  const { data: offchain, isLoading: loadingOff } = useOffchainRoyalties();
+  const { mutateAsync: addOffchain, isPending: addingOff } = useAddOffchainRoyalty();
+  const [token, setToken] = useState<'FLOW'|'USDC'|'FROTH'>('FLOW');
+  const { mutateAsync: createPayout, isPending } = useCreatePayout();
 
   return (
     <div className="p-6 md:p-8 space-y-8 animate-fade-in">
@@ -174,21 +184,70 @@ export function DashboardOverview() {
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Withdraw Pending Royalties</h3>
-            <p className="text-muted-foreground mb-4">Transfer $3,421.50 to your wallet</p>
-            <div className="text-primary group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
-              Withdraw Now →
+          <CardContent className="p-6 space-y-3">
+            <h3 className="text-lg font-semibold">Withdraw Pending Royalties</h3>
+            <p className="text-muted-foreground">Choose payout token and distribute automatically</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Payout Token</div>
+                <Select value={token} onValueChange={(v: any) => setToken(v)}>
+                  <SelectTrigger className="glass-card border-border/50">
+                    <SelectValue placeholder="Select token" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FLOW">FLOW</SelectItem>
+                    <SelectItem value="USDC">USDC</SelectItem>
+                    <SelectItem value="FROTH">FROTH</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  className="w-full"
+                  variant="gradient"
+                  disabled={isPending}
+                  onClick={async () => {
+                    try {
+                      const amountUSD = 3421.5; // example pending amount; integrate real value later
+                      const recipients = [
+                        { wallet: "0x742d...Ab3f", percentage: 40 },
+                        { wallet: "0x8a2c...7e9d", percentage: 30 },
+                        { wallet: "0x5f1b...2c4a", percentage: 20 },
+                        { wallet: "0x1234...abcd", percentage: 10 },
+                      ];
+                      const res = await createPayout({ token, amountUSD, recipients });
+                      toast.success(`Payout queued (${res.token})`, { description: `Job ${res.jobId}` });
+                    } catch (e: any) {
+                      toast.error("Failed to create payout", { description: e?.message });
+                    }
+                  }}
+                >
+                  {isPending ? 'Queuing…' : 'Distribute Now →'}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Manage Royalty Splits</h3>
-            <p className="text-muted-foreground mb-4">Configure collaborator payments</p>
-            <div className="text-primary group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
-              Configure Splits →
+          <CardContent className="p-6 space-y-3">
+            <h3 className="text-lg font-semibold">Off-chain Royalty Aggregation</h3>
+            <p className="text-muted-foreground">Track royalties from marketplaces without standardized fields.</p>
+            <div className="text-sm text-muted-foreground">
+              {loadingOff ? 'Loading…' : `${offchain?.royalties?.length ?? 0} records`}
+            </div>
+            <div>
+              <Button
+                size="sm"
+                variant="glass"
+                disabled={addingOff}
+                onClick={async () => {
+                  await addOffchain({ marketplace: 'CustomMarket', nftId: 'n-custom', amountUSD: 25.5, note: 'Manual sync' });
+                  toast.success('Added off-chain royalty record');
+                }}
+              >
+                {addingOff ? 'Adding…' : 'Add Sample Record'}
+              </Button>
             </div>
           </CardContent>
         </Card>
