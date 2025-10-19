@@ -79,6 +79,24 @@ All colors MUST be HSL.
   .glow-accent {
     box-shadow: var(--glow-accent);
   }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 8s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  .bg-300\% {
+    background-size: 300% 300%;
+  }
 }
 
 @layer base {
