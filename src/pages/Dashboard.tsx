@@ -5,8 +5,10 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
 import { DashboardTransactions } from "@/components/dashboard/DashboardTransactions";
 import { DashboardSplits } from "@/components/dashboard/DashboardSplits";
+import { DashboardNotifications } from "@/components/dashboard/DashboardNotifications";
+import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 
-export type DashboardView = "overview" | "analytics" | "transactions" | "splits";
+export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications";
 
 const Dashboard = () => {
   const [currentView, setCurrentView] = useState<DashboardView>("overview");
@@ -21,6 +23,8 @@ const Dashboard = () => {
         return <DashboardTransactions />;
       case "splits":
         return <DashboardSplits />;
+      case "notifications":
+        return <DashboardNotifications />;
       default:
         return <DashboardOverview />;
     }
@@ -30,9 +34,12 @@ const Dashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <DashboardSidebar currentView={currentView} setCurrentView={setCurrentView} />
-        <main className="flex-1 overflow-auto">
+        <div className="flex-1 flex flex-col min-w-0">
+          <DashboardTopbar />
+          <main className="flex-1 overflow-auto">
           {renderView()}
-        </main>
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );

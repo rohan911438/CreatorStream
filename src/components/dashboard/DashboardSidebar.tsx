@@ -1,4 +1,4 @@
-import { Home, TrendingUp, History, Users, Wallet } from "lucide-react";
+import { Home, TrendingUp, History, Users, Wallet, Bell, RefreshCw } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { DashboardView } from "@/pages/Dashboard";
+import { Button } from "@/components/ui/button";
+import * as fcl from "@onflow/fcl";
 
 interface DashboardSidebarProps {
   currentView: DashboardView;
@@ -27,6 +29,7 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
     { id: "analytics" as DashboardView, title: "Analytics", icon: TrendingUp },
     { id: "transactions" as DashboardView, title: "Transactions", icon: History },
     { id: "splits" as DashboardView, title: "Royalty Splits", icon: Users },
+    { id: "notifications" as DashboardView, title: "Notifications", icon: Bell },
   ];
 
   return (
@@ -43,7 +46,7 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
         )}
       </div>
 
-      <SidebarTrigger className="m-2 self-end" />
+  <SidebarTrigger className="m-2 self-end" />
 
       <SidebarContent>
         <SidebarGroup>
@@ -69,14 +72,22 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
           </SidebarGroupContent>
         </SidebarGroup>
 
+
+
+        {/* Wallet */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Wallet</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="glass-card p-3 rounded-lg m-2">
+            <div className="glass-card p-3 rounded-lg m-2 space-y-2">
               {!collapsed ? (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">Connected</div>
                   <div className="text-sm font-mono">0x742d...Ab3f</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="glass" className="text-xs" onClick={() => fcl.logIn?.()}>Dapper</Button>
+                    <Button size="sm" variant="glass" className="text-xs" onClick={() => fcl.authenticate({ service: { f_type: "WalletConnect", f_vsn: "1.0.0", provider: { name: "Blocto" } } } as any)}>Blocto</Button>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full gap-1"><RefreshCw className="h-3 w-3" /> Switch Wallet</Button>
                 </>
               ) : (
                 <div className="w-3 h-3 bg-green-500 rounded-full mx-auto" />

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, TrendingUp, Clock, Activity, Calendar, Users } from "lucide-react";
+import { DollarSign, TrendingUp, Clock, Activity, Calendar, Users, Trophy, Gift } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { formatUSD, nextPayout, mockPayouts } from "@/lib/data";
 
 export function DashboardOverview() {
   const stats = [
@@ -45,10 +46,16 @@ export function DashboardOverview() {
   ];
 
   const pendingPayouts = [
-    { id: "1", collection: "Azuki Collection", amount: "0.8 ETH", scheduledDate: "Jan 20, 2024", recipients: 3 },
-    { id: "2", collection: "CloneX Series", amount: "1.5 ETH", scheduledDate: "Jan 22, 2024", recipients: 5 },
-    { id: "3", collection: "Moonbirds #2345", amount: "0.4 ETH", scheduledDate: "Jan 25, 2024", recipients: 2 },
+    ...mockPayouts.map(p => ({
+      id: p.id,
+      collection: p.collection,
+      amount: formatUSD(p.amountUSD),
+      scheduledDate: new Date(p.dateISO).toLocaleString(),
+      recipients: p.recipients,
+    })),
   ];
+
+  const next = nextPayout();
 
   return (
     <div className="p-6 md:p-8 space-y-8 animate-fade-in">
@@ -80,6 +87,27 @@ export function DashboardOverview() {
           </Card>
         ))}
       </div>
+
+      {/* Next Payout Banner */}
+      {next && (
+        <Card className="glass-card border-primary/40">
+          <CardContent className="p-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">Upcoming payout</div>
+              <div className="text-xl md:text-2xl font-semibold">{next.collection}</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Scheduled</div>
+              <div className="font-mono">{new Date(next.dateISO).toLocaleString()}</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Amount</div>
+              <div className="text-2xl font-bold gradient-text">{formatUSD(next.amountUSD)}</div>
+            </div>
+            <Badge variant="outline">{next.recipients} recipients</Badge>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pending Payouts and Recent Transactions */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -162,6 +190,28 @@ export function DashboardOverview() {
             <div className="text-primary group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
               Configure Splits →
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gamified Stats */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card className="glass-card border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary" /> Total Royalties Distributed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold gradient-text">{formatUSD(24563.9)}</div>
+            <div className="text-xs text-muted-foreground mt-1">Lifetime</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary" /> Total Collaborators Helped</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold gradient-text">37</div>
+            <div className="text-xs text-muted-foreground mt-1">Across all collections</div>
           </CardContent>
         </Card>
       </div>
