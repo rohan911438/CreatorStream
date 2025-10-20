@@ -1,10 +1,26 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import { store } from './store.js';
+import { creatorsRouter } from './routes/creators.js';
+import { royaltiesRouter } from './routes/royalties.js';
+import { forteRouter } from './routes/forte.js';
+
+// Load env from server/.env if present, else from project .env
+try {
+  const serverEnvPath = path.resolve(process.cwd(), 'server', '.env');
+  const rootEnvPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(serverEnvPath)) {
+    dotenv.config({ path: serverEnvPath });
+  } else if (fs.existsSync(rootEnvPath)) {
+    dotenv.config({ path: rootEnvPath });
+  } else {
+    dotenv.config();
+  }
+} catch {}
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -15,6 +31,10 @@ if (!DUNE_API_KEY) {
 
 app.use(cors());
 app.use(express.json());
+// Mount new modular routers
+app.use('/api/creators', creatorsRouter);
+app.use('/api/royalties', royaltiesRouter);
+app.use('/api/forte', forteRouter);
 
 // Simple in-memory cache with TTL (30 minutes)
 const cache = new Map();
@@ -278,9 +298,8 @@ try {
   const distPath = path.resolve(process.cwd(), 'dist');
   if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    // SPA fallback to index.html
-    app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api/')) return next();
+    // SPA fallback to index.html for any non-API route
+    app.get(/^(?!\/api\/).*/, (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

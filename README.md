@@ -103,3 +103,36 @@ npm run dev:full
 ```
 
 This uses the backend proxy at `/api/beezie/predict`, so your key remains server-side.
+
+## Backend (Express API) quick guide
+
+The app includes a small Express server that handles data persistence, payout jobs, and secure API proxies.
+
+- Start both together during development:
+	- `npm run dev:full` (backend http://localhost:8787 + frontend http://localhost:8080)
+- Or run separately:
+	- Backend: `npm run server`
+	- Frontend: `npm run dev`
+
+Endpoints overview:
+
+- Health: GET `/api/health`
+- Off‑chain royalties (persisted to `server/data/db.json`):
+	- GET `/api/offchain/royalties`
+	- POST `/api/offchain/royalties` { marketplace, nftId, amountUSD, txHash?, note?, dateISO? }
+	- GET `/api/royalties/aggregate`
+	- POST `/api/offchain/reconcile`
+- Payouts: POST `/api/payouts`, GET `/api/payouts`, GET `/api/payouts/:id`, PATCH retry/cancel
+- Dune proxy: GET `/api/dune/query/:queryId/results` (requires `DUNE_API_KEY` in `server/.env`)
+- Beezie (Gemini) proxy: POST `/api/beezie/predict` (requires `GEMINI_API_KEY`)
+- Supabase (optional): creators and royalties routes require `SUPABASE_URL` and a key
+
+Environment variables go in `server/.env`. See `server/.env.example` for a template.
+
+Tip: You can test requests quickly using the `server/requests.http` file with the REST Client VS Code extension, or use PowerShell:
+
+```powershell
+$body = @{ marketplace='OpenSea'; nftId='demo-1'; amountUSD=12.34 } | ConvertTo-Json -Compress
+Invoke-RestMethod -Method Post -Uri http://localhost:8787/api/offchain/royalties -ContentType 'application/json' -Body $body
+Invoke-RestMethod -Uri http://localhost:8787/api/offchain/royalties
+```

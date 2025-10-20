@@ -1,0 +1,34 @@
+### Health
+GET http://localhost:8787/api/health
+
+### Add off-chain royalty
+POST http://localhost:8787/api/offchain/royalties
+Content-Type: application/json
+
+{
+  "marketplace": "OpenSea",
+  "nftId": "demo-1",
+  "amountUSD": 12.34
+}
+
+### List off-chain royalties
+GET http://localhost:8787/api/offchain/royalties
+
+### Aggregate (off-chain only in this demo)
+GET http://localhost:8787/api/royalties/aggregate
+
+### Create a payout job
+POST http://localhost:8787/api/payouts
+Content-Type: application/json
+
+{
+  "token": "USDC",
+  "amountUSD": 100,
+  "recipients": [
+    { "wallet": "0xabc", "percentage": 60 },
+    { "wallet": "0xdef", "percentage": 40 }
+  ]
+}
+
+### List payout jobs
+GET http://localhost:8787/api/payouts
