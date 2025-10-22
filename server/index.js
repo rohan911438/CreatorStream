@@ -8,6 +8,7 @@ import { store } from './store.js';
 import { creatorsRouter } from './routes/creators.js';
 import { royaltiesRouter } from './routes/royalties.js';
 import { forteRouter } from './routes/forte.js';
+import { flowRouter } from './routes/flow.js';
 
 // Load env from server/.env if present, else from project .env
 try {
@@ -35,6 +36,7 @@ app.use(express.json());
 app.use('/api/creators', creatorsRouter);
 app.use('/api/royalties', royaltiesRouter);
 app.use('/api/forte', forteRouter);
+app.use('/api/flow', flowRouter);
 
 // Simple in-memory cache with TTL (30 minutes)
 const cache = new Map();
@@ -308,5 +310,6 @@ try {
 }
 
 app.listen(PORT, () => {
-  console.log(`[server] listening on port ${PORT}`);
+  console.log(`[server] Flow API live on port ${PORT}`);
+  console.log(`[server] Flow endpoints available at http://localhost:${PORT}/api/flow`);
 });

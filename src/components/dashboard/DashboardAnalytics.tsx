@@ -3,24 +3,9 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { mockEarnings, mockNFTs } from "@/lib/data";
 import { useDuneQuery } from "@/lib/dune";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
-import { useBeeziePredict } from "@/lib/beezie";
 
 export function DashboardAnalytics() {
-  // Dune embed URL from env or local preference
-  const duneEmbedFromEnv = (import.meta as any)?.env?.VITE_DUNE_EMBED_URL as string | undefined;
-  const [duneEmbedUrl, setDuneEmbedUrl] = useState<string>("");
-  const [draftUrl, setDraftUrl] = useState<string>("");
-
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? window.localStorage.getItem("duneEmbedUrl") : null;
-    const initial = saved || duneEmbedFromEnv || "";
-    setDuneEmbedUrl(initial);
-    setDraftUrl(initial);
-  }, [duneEmbedFromEnv]);
   const earningsData = [
     { month: "Jan", earnings: 4200, volume: 12 },
     { month: "Feb", earnings: 5100, volume: 15 },
@@ -199,69 +184,107 @@ export function DashboardAnalytics() {
         </Card>
       </div>
 
-      {/* Optional Integrations */}
+      {/* Flow Blockchain Stats */}
       <div className="grid lg:grid-cols-3 gap-6">
         <Card className="glass-card border-border/50">
           <CardHeader>
-            <CardTitle>Dune Analytics (Embed)</CardTitle>
+            <CardTitle>Flow Network Stats</CardTitle>
           </CardHeader>
           <CardContent>
-            {duneEmbedUrl ? (
-              <AspectRatio ratio={16 / 9}>
-                <iframe
-                  src={duneEmbedUrl}
-                  title="Dune Analytics Embed"
-                  className="w-full h-full rounded-lg border border-border/50"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-                />
-              </AspectRatio>
-            ) : (
-              <div className="space-y-3">
-                <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-muted-foreground">
-                  Paste a Dune embed URL below or set VITE_DUNE_EMBED_URL
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+                <div>
+                  <p className="text-xs text-muted-foreground">Contract Address</p>
+                  <p className="text-sm font-mono text-foreground/90 mt-1">0xf8d6e0586b0a20c7</p>
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="https://dune.com/embeds/your-chart-id/your-viz-id"
-                    value={draftUrl}
-                    onChange={(e) => setDraftUrl(e.target.value)}
-                  />
-                  <Button
-                    onClick={() => {
-                      setDuneEmbedUrl(draftUrl);
-                      try {
-                        window.localStorage.setItem("duneEmbedUrl", draftUrl);
-                      } catch {}
-                    }}
-                  >
-                    Save
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Tip: Open any Dune visualization, click Share → Embed to get the URL. No API key is required for embeds.
-                </p>
               </div>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="glass-card border-border/50">
-          <CardHeader>
-            <CardTitle>Disney/NBA NFT Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center text-muted-foreground">
-              Coming soon
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <p className="text-xs text-muted-foreground">Network</p>
+                  <p className="text-lg font-bold text-foreground mt-1">Flow Emulator</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <p className="text-lg font-bold text-green-500 mt-1">● Active</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20">
+                <p className="text-xs text-muted-foreground">Total Royalties Tracked</p>
+                <p className="text-2xl font-bold text-foreground mt-1">${marketplaceData.reduce((sum, m) => sum + m.earnings, 0).toLocaleString()}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
+        
         <Card className="glass-card border-border/50">
           <CardHeader>
-            <CardTitle>Beezie AI Predictions</CardTitle>
+            <CardTitle>Top Collections Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <BeezieCard />
+            <div className="space-y-3">
+              {collectionData.slice(0, 4).map((collection, idx) => (
+                <div key={collection.name} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                      idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
+                      idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
+                      idx === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                      'bg-gradient-to-br from-blue-400 to-purple-500'
+                    }`}>
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{collection.name}</p>
+                      <p className="text-xs text-muted-foreground">{collection.percentage}% share</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">${collection.earnings.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="glass-card border-border/50">
+          <CardHeader>
+            <CardTitle>Recent Blockchain Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium text-green-500">✓ Royalty Recorded</p>
+                  <p className="text-xs text-muted-foreground">2 min ago</p>
+                </div>
+                <p className="text-sm text-foreground/90">$1,250.00 from NBA Top Shot</p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium text-blue-500">⚡ Split Created</p>
+                  <p className="text-xs text-muted-foreground">15 min ago</p>
+                </div>
+                <p className="text-sm text-foreground/90">3 collaborators • Digital Waves</p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium text-purple-500">✓ Royalty Recorded</p>
+                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+                </div>
+                <p className="text-sm text-foreground/90">$890.00 from Cosmic Dreams</p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium text-orange-500">🔄 Tracker Initialized</p>
+                  <p className="text-xs text-muted-foreground">3 hours ago</p>
+                </div>
+                <p className="text-sm text-foreground/90">New creator onboarded</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -342,48 +365,6 @@ export function DashboardAnalytics() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function BeezieCard() {
-  const { mutateAsync, isPending, isError, error, data } = useBeeziePredict();
-  const [prompt, setPrompt] = useState<string>("");
-
-  return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
-        <Input
-          placeholder="Ask Beezie to predict next week’s top-earning NFT segment…"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={async (e) => {
-            if (e.key === 'Enter' && prompt.trim() && !isPending) {
-              await mutateAsync({ prompt: prompt.trim() }).catch(() => {});
-            }
-          }}
-        />
-        <Button
-          disabled={!prompt.trim() || isPending}
-          onClick={async () => {
-            await mutateAsync({ prompt: prompt.trim() }).catch(() => {});
-          }}
-        >
-          {isPending ? 'Predicting…' : 'Predict'}
-        </Button>
-      </div>
-      <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/30 p-4 text-sm">
-        {isError ? (
-          <div className="text-red-500">{(error as any)?.message || 'Prediction failed'}</div>
-        ) : data?.text ? (
-          <pre className="whitespace-pre-wrap text-foreground/90">{data.text}</pre>
-        ) : (
-          <div className="h-full flex items-center justify-center text-muted-foreground">AI prediction output will appear here</div>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Powered by Google Gemini via a secure server proxy. Set GEMINI_API_KEY in your .env.
-      </p>
     </div>
   );
 }

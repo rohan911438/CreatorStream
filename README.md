@@ -29,10 +29,6 @@ Built for Forte Hacks to solve NFT creator payment tracking using Flow blockchai
 
 ## 📋 Project Overview
 
----
-
-## 📋 Project Overview
-
 CreatorStream is a decentralized application built on the Flow blockchain that automates NFT royalty tracking and distribution for digital creators. It eliminates manual tracking, provides transparent on-chain records, and enables automated revenue splits among collaborators.
 
 ### 💡 The Problem
@@ -240,26 +236,7 @@ npm run server   # Backend only
 
 ---
 
-## 📱 Screenshots
-
-### Landing Page
-![Landing Page](./screenshots/landing.png)
-
-### Dashboard Overview
-![Dashboard](./screenshots/dashboard.png)
-
-### Royalty Tracking
-![Transactions](./screenshots/transactions.png)
-
-### Split Management
-![Splits](./screenshots/splits.png)
-
-### Analytics
-![Analytics](./screenshots/analytics.png)
-
----
-
-## 🔧 Development
+##  Development
 
 ### **Project Structure**
 ```
@@ -490,15 +467,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 [⭐ Star this repo](https://github.com/rohan911438/CreatorStream) | [🐛 Report Bug](https://github.com/rohan911438/CreatorStream/issues) | [💡 Request Feature](https://github.com/rohan911438/CreatorStream/issues)
 
 </div>
-
----
-
-## 📊 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/rohan911438/CreatorStream?style=social)
-![GitHub forks](https://img.shields.io/github/forks/rohan911438/CreatorStream?style=social)
-![GitHub issues](https://img.shields.io/github/issues/rohan911438/CreatorStream)
-![GitHub license](https://img.shields.io/github/license/rohan911438/CreatorStream)
 
 ---
 
