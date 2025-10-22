@@ -2,15 +2,11 @@
 
 <div align="center">
 
-<img src="./public/assets/creatorstream-logo.png" alt="CreatorStream Logo" width="300"/>
-
 ![CreatorStream Banner](https://img.shields.io/badge/Built%20for-Forte%20Hacks-purple?style=for-the-badge)
 ![Flow Blockchain](https://img.shields.io/badge/Flow-Blockchain-00EF8B?style=for-the-badge&logo=flow)
 ![Dapper Wallet](https://img.shields.io/badge/Dapper-Wallet-6B46C1?style=for-the-badge)
 
 **Automate and track your NFT royalties with blockchain transparency**
-
-[Live Demo](#) | [Video Demo](#) | [Documentation](#documentation)
 
 </div>
 
