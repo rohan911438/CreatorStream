@@ -8,6 +8,8 @@
 
 **Automate and track your NFT royalties with blockchain transparency**
 
+[Live Demo - creatorstream.lovable.app](https://creatorstream.lovable.app) | [Video Demo](https://youtu.be/oKXEZIw_xOY?si=-ewsiuwMBPCuYgxF) | [Documentation](#documentation)
+
 </div>
 
 ---
