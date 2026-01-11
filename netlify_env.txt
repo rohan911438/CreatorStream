@@ -1,0 +1,32 @@
+# Netlify UI-ready environment variables (copy-paste into Site settings → Build & deploy → Environment)
+# These are EXAMPLE placeholder values — replace with your real keys.
+# IMPORTANT: keep server-only keys (service-role keys) private and do NOT expose them to client-side builds.
+
+# Frontend (Netlify build/runtime)
+VITE_API_URL=https://api.creatorstream.example.com
+
+# Server-side (only set these where your server runs; if you host the server on Netlify functions, keep secrets private)
+# Dune Analytics
+DUNE_API_KEY=your-dune-api-key-here
+
+# Supabase
+SUPABASE_URL=https://your-supabase-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key-REPLACE
+# Alternative fallback names (if you prefer)
+SUPABASE_API_KEY=supabase-api-key-REPLACE
+SUPABASE_ANON_KEY=supabase-anon-key-REPLACE
+
+# Flow / Forte
+FLOW_ACCESS_API=https://rest-mainnet.onflow.org
+FLOW_ACCESS_NODE=https://access.mainnet.nodes.onflow.org
+FLOW_CONTRACT_ADDRESS=0xf8d6e0586b0a20c7
+
+# Optional Beezie / Gemini proxy
+GEMINI_API_KEY=your-gemini-api-key-here
+
+# Server port (default)
+PORT=8787
+
+# Notes:
+# - Replace all "-REPLACE" and "your-...-here" values with real secrets in a secure place (Netlify environment settings or your server's secrets manager).
+# - Only set VITE_API_URL in Netlify for frontend builds; do NOT put service role keys in client-accessible vars.

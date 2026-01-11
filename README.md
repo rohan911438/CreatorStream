@@ -169,7 +169,11 @@ CreatorStream is a decentralized application built on the Flow blockchain that a
 
 ---
 
-## 📦 Deployment Information
+## 📦 Deployment 
+
+### **Netlify **
+
+-https://creatorstream.netlify.app/
 
 ### **Contract Details**
 
