@@ -2,39 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Wallet, Users, BarChart3, Shield, Zap, Sparkles, Lock, Clock, Gift, Rocket, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { login, logout, subscribeToAuth } from "@/lib/dapper-wallet";
 import type { CurrentUser } from "@onflow/fcl";
 import { toast } from "sonner";
-
-// Number counter animation hook
-const useCountUp = (end: number, duration: number = 2, start: number = 0) => {
-	const [count, setCount] = useState(start);
-	const countRef = useRef(0);
-	const inView = useInView(useRef(null), { once: true, margin: "-100px" });
-
-	useEffect(() => {
-		if (!inView) return;
-		
-		let startTime: number | null = null;
-		const animate = (currentTime: number) => {
-			if (startTime === null) startTime = currentTime;
-			const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
-			const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-			countRef.current = Math.floor(start + (end - start) * easeOutQuart);
-			setCount(countRef.current);
-			
-			if (progress < 1) {
-				requestAnimationFrame(animate);
-			} else {
-				setCount(end);
-			}
-		};
-		requestAnimationFrame(animate);
-	}, [end, duration, start, inView]);
-
-	return count;
-};
 
 const Landing = () => {
 	const navigate = useNavigate();
@@ -43,10 +14,8 @@ const Landing = () => {
 	const { scrollYProgress } = useScroll();
 	const heroRef = useRef<HTMLDivElement>(null);
 
-	// Parallax transforms
-	const y1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
+	// Parallax transform
 	const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-	const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
 	useEffect(() => {
 		const unsubscribe = subscribeToAuth((currentUser) => {
@@ -535,14 +504,15 @@ const Landing = () => {
 								/>
 								<motion.div 
 									className={`bg-gradient-to-br ${feature.color} w-14 h-14 rounded-xl flex items-center justify-center mb-4 relative z-10`}
-									whileHover={{ scale: 1.2, rotate: 360 }}
-									transition={{ duration: 0.5 }}
+									whileHover={{ scale: 1.2, rotate: 360, transition: { duration: 0.5 } }}
 									animate={{ 
 										y: [0, -5, 0],
 										rotate: [0, 5, -5, 0]
 									}}
-									style={{ 
-										transition: { duration: 3 + index * 0.5, repeat: Infinity, ease: "easeInOut" }
+									transition={{ 
+										duration: 3 + index * 0.5, 
+										repeat: Infinity, 
+										ease: "easeInOut" 
 									}}
 								>
 									<feature.icon className="h-7 w-7 text-white" />
@@ -607,18 +577,20 @@ const Landing = () => {
 									transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 }}
 								/>
 								<div className="relative z-10">
-									<motion.div 
-										className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-										whileHover={{ scale: 1.3, rotate: 360 }}
-										transition={{ duration: 0.6 }}
-										animate={{ 
-											rotate: [0, 10, -10, 0],
-											scale: [1, 1.1, 1]
-										}}
-										style={{
-											transition: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: index * 0.3 }
-										}}
-									>
+								<motion.div 
+									className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+									whileHover={{ scale: 1.3, rotate: 360 }}
+									animate={{ 
+										rotate: [0, 10, -10, 0],
+										scale: [1, 1.1, 1]
+									}}
+									transition={{ 
+										duration: 4, 
+										repeat: Infinity, 
+										ease: "easeInOut", 
+										delay: index * 0.3 
+									}}
+								>
 										<benefit.icon className="h-8 w-8 text-primary" />
 									</motion.div>
 									<motion.h3 
