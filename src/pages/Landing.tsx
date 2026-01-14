@@ -1,16 +1,52 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, BarChart3, Shield, Zap, Sparkles, Lock, Clock, Gift, Rocket, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
 import { login, logout, subscribeToAuth } from "@/lib/dapper-wallet";
 import type { CurrentUser } from "@onflow/fcl";
 import { toast } from "sonner";
+
+// Number counter animation hook
+const useCountUp = (end: number, duration: number = 2, start: number = 0) => {
+	const [count, setCount] = useState(start);
+	const countRef = useRef(0);
+	const inView = useInView(useRef(null), { once: true, margin: "-100px" });
+
+	useEffect(() => {
+		if (!inView) return;
+		
+		let startTime: number | null = null;
+		const animate = (currentTime: number) => {
+			if (startTime === null) startTime = currentTime;
+			const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+			const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+			countRef.current = Math.floor(start + (end - start) * easeOutQuart);
+			setCount(countRef.current);
+			
+			if (progress < 1) {
+				requestAnimationFrame(animate);
+			} else {
+				setCount(end);
+			}
+		};
+		requestAnimationFrame(animate);
+	}, [end, duration, start, inView]);
+
+	return count;
+};
 
 const Landing = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = useState<CurrentUser | null>(null);
 	const [isConnecting, setIsConnecting] = useState(false);
+	const { scrollYProgress } = useScroll();
+	const heroRef = useRef<HTMLDivElement>(null);
+
+	// Parallax transforms
+	const y1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
+	const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
+	const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
 	useEffect(() => {
 		const unsubscribe = subscribeToAuth((currentUser) => {
@@ -130,12 +166,72 @@ const Landing = () => {
 	return (
 		<div className="min-h-screen bg-background">
 			{/* Hero Section */}
-			<section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-				{/* Animated background elements */}
+			<section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+				{/* Animated background elements with floating animation */}
 				<div className="absolute inset-0 overflow-hidden">
-					<div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-					<div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-					<div className="absolute top-1/2 left-1/2 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+					<motion.div 
+						className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"
+						animate={{
+							x: [0, 50, -30, 0],
+							y: [0, -40, 30, 0],
+							scale: [1, 1.1, 0.9, 1],
+						}}
+						transition={{
+							duration: 20,
+							repeat: Infinity,
+							ease: "easeInOut",
+						}}
+					/>
+					<motion.div 
+						className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl"
+						animate={{
+							x: [0, -60, 40, 0],
+							y: [0, 50, -35, 0],
+							scale: [1, 0.9, 1.1, 1],
+						}}
+						transition={{
+							duration: 25,
+							repeat: Infinity,
+							ease: "easeInOut",
+							delay: 1,
+						}}
+					/>
+					<motion.div 
+						className="absolute top-1/2 left-1/2 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"
+						animate={{
+							x: [0, 30, -50, 0],
+							y: [0, -60, 40, 0],
+							scale: [1, 1.2, 0.8, 1],
+						}}
+						transition={{
+							duration: 30,
+							repeat: Infinity,
+							ease: "easeInOut",
+							delay: 2,
+						}}
+					/>
+					{/* Additional floating particles */}
+					{[...Array(6)].map((_, i) => (
+						<motion.div
+							key={i}
+							className="absolute w-2 h-2 bg-primary/30 rounded-full"
+							style={{
+								left: `${20 + i * 15}%`,
+								top: `${30 + (i % 3) * 20}%`,
+							}}
+							animate={{
+								y: [0, -30, 0],
+								opacity: [0.3, 0.6, 0.3],
+								scale: [1, 1.5, 1],
+							}}
+							transition={{
+								duration: 3 + i,
+								repeat: Infinity,
+								ease: "easeInOut",
+								delay: i * 0.5,
+							}}
+						/>
+					))}
 				</div>
         
 				<div className="relative z-10 container mx-auto px-4 py-20">
@@ -143,12 +239,20 @@ const Landing = () => {
 						initial={{ opacity: 0, y: 30 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.8 }}
+						style={{ y: y2 }}
 						className="text-center"
 					>
 						<motion.div
-							initial={{ scale: 0.9, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							transition={{ duration: 0.5, delay: 0.2 }}
+							initial={{ scale: 0.9, opacity: 0, y: -20 }}
+							animate={{ scale: 1, opacity: 1, y: 0 }}
+							transition={{ 
+								duration: 0.6, 
+								delay: 0.2,
+								type: "spring",
+								stiffness: 200,
+								damping: 20
+							}}
+							whileHover={{ scale: 1.05 }}
 							className="inline-block mb-4"
 						>
 							<span className="px-6 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold backdrop-blur-sm">
@@ -156,19 +260,37 @@ const Landing = () => {
 							</span>
 						</motion.div>
             
-						<h1 className="text-6xl md:text-7xl lg:text-9xl font-bold mb-6 gradient-text animate-gradient-shift bg-300% tracking-tight">
+						<motion.h1 
+							initial={{ opacity: 0, scale: 0.8, y: 50 }}
+							animate={{ opacity: 1, scale: 1, y: 0 }}
+							transition={{ 
+								duration: 1,
+								delay: 0.3,
+								type: "spring",
+								stiffness: 100,
+								damping: 15
+							}}
+							className="text-6xl md:text-7xl lg:text-9xl font-bold mb-6 gradient-text animate-gradient-shift bg-300% tracking-tight"
+						>
 							CreatorStream
-						</h1>
+						</motion.h1>
             
 						<motion.p 
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ delay: 0.4 }}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.6, duration: 0.8 }}
 							className="text-xl md:text-3xl text-muted-foreground mb-12 max-w-3xl mx-auto font-light"
 						>
 							Automate and track your NFT royalties on Flow blockchain
 							<br />
-							<span className="text-2xl md:text-xl gradient-text font-semibold">The most advanced creator platform for Web3</span>
+							<motion.span 
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{ delay: 0.9 }}
+								className="text-2xl md:text-xl gradient-text font-semibold inline-block"
+							>
+								The most advanced creator platform for Web3
+							</motion.span>
 						</motion.p>
             
 						<motion.div 
@@ -179,48 +301,85 @@ const Landing = () => {
 						>
 							{user?.loggedIn ? (
 								<>
-									<Button 
-										size="lg" 
-										variant="gradient"
-										onClick={() => navigate('/dashboard')}
-										className="group text-lg px-8 py-6 h-auto"
+									<motion.div
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
 									>
-										<BarChart3 className="mr-2 h-6 w-6 group-hover:scale-110 transition-transform" />
-										Go to Dashboard
-									</Button>
-									<Button 
-										size="lg" 
-										variant="outline"
-										onClick={handleDisconnect}
-										className="text-lg px-8 py-6 h-auto"
+										<Button 
+											size="lg" 
+											variant="gradient"
+											onClick={() => navigate('/dashboard')}
+											className="group text-lg px-8 py-6 h-auto"
+										>
+											<motion.div
+												animate={{ rotate: [0, 10, -10, 0] }}
+												transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+											>
+												<BarChart3 className="mr-2 h-6 w-6 group-hover:scale-110 transition-transform" />
+											</motion.div>
+											Go to Dashboard
+										</Button>
+									</motion.div>
+									<motion.div
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
 									>
-										Disconnect ({user.addr?.slice(0, 6)}...{user.addr?.slice(-4)})
-									</Button>
+										<Button 
+											size="lg" 
+											variant="outline"
+											onClick={handleDisconnect}
+											className="text-lg px-8 py-6 h-auto"
+										>
+											Disconnect ({user.addr?.slice(0, 6)}...{user.addr?.slice(-4)})
+										</Button>
+									</motion.div>
 								</>
 							) : (
 								<>
-									<Button 
-										size="lg" 
-										variant="gradient"
-										onClick={handleConnectWallet}
-										disabled={isConnecting}
-										className="group text-lg px-8 py-6 h-auto shadow-2xl shadow-primary/50"
+									<motion.div
+										whileHover={{ scale: 1.05, y: -2 }}
+										whileTap={{ scale: 0.95 }}
+										animate={{ y: [0, -5, 0] }}
+										transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
 									>
-										<Wallet className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
-										{isConnecting ? "Connecting..." : "Connect Dapper Wallet"}
-									</Button>
-									<Button 
-										size="lg" 
-										variant="glass"
-										className="text-lg px-8 py-6 h-auto"
-										onClick={() => {
-											const featuresSection = document.getElementById('features');
-											featuresSection?.scrollIntoView({ behavior: 'smooth' });
-										}}
+										<Button 
+											size="lg" 
+											variant="gradient"
+											onClick={handleConnectWallet}
+											disabled={isConnecting}
+											className="group text-lg px-8 py-6 h-auto shadow-2xl shadow-primary/50"
+										>
+											<motion.div
+												animate={{ rotate: [0, 12, -12, 0] }}
+												transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+											>
+												<Wallet className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
+											</motion.div>
+											{isConnecting ? "Connecting..." : "Connect Dapper Wallet"}
+										</Button>
+									</motion.div>
+									<motion.div
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
 									>
-										<Sparkles className="mr-2 h-5 w-5" />
-										Explore Features
-									</Button>
+										<Button 
+											size="lg" 
+											variant="glass"
+											className="text-lg px-8 py-6 h-auto"
+											onClick={() => {
+												const featuresSection = document.getElementById('features');
+												featuresSection?.scrollIntoView({ behavior: 'smooth' });
+											}}
+										>
+											<motion.div
+												animate={{ rotate: 360 }}
+												transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+											>
+												<Sparkles className="mr-2 h-5 w-5" />
+											</motion.div>
+											Explore Features
+										</Button>
+									</motion.div>
 								</>
 							)}
 						</motion.div>
@@ -254,21 +413,73 @@ const Landing = () => {
 						animate="visible"
 						className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto"
 					>
-						<motion.div variants={itemVariants} className="glass-card p-8 rounded-2xl hover:scale-105 transition-transform duration-300 border-2 border-primary/20">
-							<div className="text-4xl font-bold gradient-text mb-2">$2.4M+</div>
-							<div className="text-sm text-muted-foreground mt-1">Total Royalties Tracked</div>
+						<motion.div 
+							variants={itemVariants}
+							whileHover={{ scale: 1.1, y: -5, rotateY: 5 }}
+							className="glass-card p-8 rounded-2xl transition-all duration-300 border-2 border-primary/20 cursor-pointer relative overflow-hidden group"
+						>
+							<motion.div 
+								className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+							/>
+							<motion.div 
+								animate={{ scale: [1, 1.1, 1] }}
+								transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+								className="text-4xl font-bold gradient-text mb-2 relative z-10"
+							>
+								$2.4M+
+							</motion.div>
+							<div className="text-sm text-muted-foreground mt-1 relative z-10">Total Royalties Tracked</div>
 						</motion.div>
-						<motion.div variants={itemVariants} className="glass-card p-8 rounded-2xl hover:scale-105 transition-transform duration-300 border-2 border-secondary/20">
-							<div className="text-4xl font-bold gradient-text mb-2">15K+</div>
-							<div className="text-sm text-muted-foreground mt-1">Active Creators</div>
+						<motion.div 
+							variants={itemVariants}
+							whileHover={{ scale: 1.1, y: -5, rotateY: -5 }}
+							className="glass-card p-8 rounded-2xl transition-all duration-300 border-2 border-secondary/20 cursor-pointer relative overflow-hidden group"
+						>
+							<motion.div 
+								className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+							/>
+							<motion.div 
+								animate={{ scale: [1, 1.1, 1] }}
+								transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+								className="text-4xl font-bold gradient-text mb-2 relative z-10"
+							>
+								15K+
+							</motion.div>
+							<div className="text-sm text-muted-foreground mt-1 relative z-10">Active Creators</div>
 						</motion.div>
-						<motion.div variants={itemVariants} className="glass-card p-8 rounded-2xl hover:scale-105 transition-transform duration-300 border-2 border-accent/20">
-							<div className="text-4xl font-bold gradient-text mb-2">50K+</div>
-							<div className="text-sm text-muted-foreground mt-1">NFT Collections</div>
+						<motion.div 
+							variants={itemVariants}
+							whileHover={{ scale: 1.1, y: -5, rotateY: 5 }}
+							className="glass-card p-8 rounded-2xl transition-all duration-300 border-2 border-accent/20 cursor-pointer relative overflow-hidden group"
+						>
+							<motion.div 
+								className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+							/>
+							<motion.div 
+								animate={{ scale: [1, 1.1, 1] }}
+								transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+								className="text-4xl font-bold gradient-text mb-2 relative z-10"
+							>
+								50K+
+							</motion.div>
+							<div className="text-sm text-muted-foreground mt-1 relative z-10">NFT Collections</div>
 						</motion.div>
-						<motion.div variants={itemVariants} className="glass-card p-8 rounded-2xl hover:scale-105 transition-transform duration-300 border-2 border-primary/20">
-							<div className="text-4xl font-bold gradient-text mb-2">99.9%</div>
-							<div className="text-sm text-muted-foreground mt-1">Uptime</div>
+						<motion.div 
+							variants={itemVariants}
+							whileHover={{ scale: 1.1, y: -5, rotateY: -5 }}
+							className="glass-card p-8 rounded-2xl transition-all duration-300 border-2 border-primary/20 cursor-pointer relative overflow-hidden group"
+						>
+							<motion.div 
+								className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+							/>
+							<motion.div 
+								animate={{ scale: [1, 1.1, 1] }}
+								transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+								className="text-4xl font-bold gradient-text mb-2 relative z-10"
+							>
+								99.9%
+							</motion.div>
+							<div className="text-sm text-muted-foreground mt-1 relative z-10">Uptime</div>
 						</motion.div>
 					</motion.div>
 				</div>
@@ -296,18 +507,54 @@ const Landing = () => {
 						{features.map((feature, index) => (
 							<motion.div
 								key={index}
-								initial={{ opacity: 0, y: 30 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.5, delay: index * 0.1 }}
-								className="glass-card p-8 rounded-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden"
+								initial={{ opacity: 0, y: 50, rotateX: -15 }}
+								whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+								viewport={{ once: true, margin: "-100px" }}
+								transition={{ 
+									duration: 0.6, 
+									delay: index * 0.1,
+									type: "spring",
+									stiffness: 100
+								}}
+								whileHover={{ 
+									scale: 1.05, 
+									y: -10,
+									rotateY: 5,
+									transition: { duration: 0.3 }
+								}}
+								className="glass-card p-8 rounded-2xl transition-all duration-300 group relative overflow-hidden cursor-pointer"
 							>
-								<div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-								<div className={`bg-gradient-to-br ${feature.color} w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+								<motion.div 
+									className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+									initial={false}
+									animate={{ 
+										scale: [1, 1.1, 1],
+										opacity: [0, 0.1, 0]
+									}}
+									transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+								/>
+								<motion.div 
+									className={`bg-gradient-to-br ${feature.color} w-14 h-14 rounded-xl flex items-center justify-center mb-4 relative z-10`}
+									whileHover={{ scale: 1.2, rotate: 360 }}
+									transition={{ duration: 0.5 }}
+									animate={{ 
+										y: [0, -5, 0],
+										rotate: [0, 5, -5, 0]
+									}}
+									style={{ 
+										transition: { duration: 3 + index * 0.5, repeat: Infinity, ease: "easeInOut" }
+									}}
+								>
 									<feature.icon className="h-7 w-7 text-white" />
-								</div>
-								<h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-								<p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+								</motion.div>
+								<motion.h3 
+									className="text-xl font-semibold mb-3 relative z-10"
+									whileHover={{ x: 5 }}
+									transition={{ type: "spring", stiffness: 400 }}
+								>
+									{feature.title}
+								</motion.h3>
+								<p className="text-muted-foreground leading-relaxed relative z-10">{feature.description}</p>
 							</motion.div>
 						))}
 					</div>
@@ -336,18 +583,51 @@ const Landing = () => {
 						{benefits.map((benefit, index) => (
 							<motion.div
 								key={index}
-								initial={{ opacity: 0, scale: 0.9 }}
-								whileInView={{ opacity: 1, scale: 1 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.5, delay: index * 0.1 }}
-								className="glass-card p-10 rounded-2xl text-center group hover:scale-105 transition-all duration-300 relative overflow-hidden"
+								initial={{ opacity: 0, scale: 0.8, y: 30 }}
+								whileInView={{ opacity: 1, scale: 1, y: 0 }}
+								viewport={{ once: true, margin: "-50px" }}
+								transition={{ 
+									duration: 0.6, 
+									delay: index * 0.15,
+									type: "spring",
+									stiffness: 100
+								}}
+								whileHover={{ 
+									scale: 1.08, 
+									y: -10,
+									transition: { duration: 0.3 }
+								}}
+								className="glass-card p-10 rounded-2xl text-center group transition-all duration-300 relative overflow-hidden cursor-pointer"
 							>
-								<div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+								<motion.div 
+									className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+									animate={{ 
+										opacity: [0, 0.05, 0],
+									}}
+									transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 }}
+								/>
 								<div className="relative z-10">
-									<div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+									<motion.div 
+										className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+										whileHover={{ scale: 1.3, rotate: 360 }}
+										transition={{ duration: 0.6 }}
+										animate={{ 
+											rotate: [0, 10, -10, 0],
+											scale: [1, 1.1, 1]
+										}}
+										style={{
+											transition: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: index * 0.3 }
+										}}
+									>
 										<benefit.icon className="h-8 w-8 text-primary" />
-									</div>
-									<h3 className="text-2xl font-bold mb-4 gradient-text">{benefit.title}</h3>
+									</motion.div>
+									<motion.h3 
+										className="text-2xl font-bold mb-4 gradient-text"
+										whileHover={{ scale: 1.05 }}
+										transition={{ type: "spring", stiffness: 400 }}
+									>
+										{benefit.title}
+									</motion.h3>
 									<p className="text-muted-foreground leading-relaxed">{benefit.description}</p>
 								</div>
 							</motion.div>
@@ -378,14 +658,38 @@ const Landing = () => {
 						{partners.map((partner, index) => (
 							<motion.div
 								key={index}
-								initial={{ opacity: 0, scale: 0.8 }}
-								whileInView={{ opacity: 1, scale: 1 }}
+								initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
+								whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
 								viewport={{ once: true }}
-								transition={{ duration: 0.4, delay: index * 0.1 }}
-								className="flex items-center gap-3 text-2xl font-bold text-muted-foreground hover:text-foreground transition-colors group"
+								transition={{ 
+									duration: 0.6, 
+									delay: index * 0.15,
+									type: "spring",
+									stiffness: 200
+								}}
+								whileHover={{ scale: 1.15, y: -5 }}
+								className="flex items-center gap-3 text-2xl font-bold text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
 							>
-								<span className="text-4xl group-hover:scale-125 transition-transform">{partner.logo}</span>
-								<span>{partner.name}</span>
+								<motion.span 
+									className="text-4xl"
+									whileHover={{ scale: 1.5, rotate: 360 }}
+									transition={{ duration: 0.6 }}
+									animate={{ 
+										rotate: [0, 10, -10, 0],
+										scale: [1, 1.1, 1]
+									}}
+									style={{
+										transition: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: index * 0.2 }
+									}}
+								>
+									{partner.logo}
+								</motion.span>
+								<motion.span
+									whileHover={{ x: 5 }}
+									transition={{ type: "spring", stiffness: 400 }}
+								>
+									{partner.name}
+								</motion.span>
 							</motion.div>
 						))}
 					</motion.div>
@@ -396,30 +700,75 @@ const Landing = () => {
 			<section className="py-20 px-4">
 				<div className="container mx-auto">
 					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						whileInView={{ opacity: 1, scale: 1 }}
-						viewport={{ once: true }}
-						transition={{ duration: 0.6 }}
+						initial={{ opacity: 0, scale: 0.9, y: 50 }}
+						whileInView={{ opacity: 1, scale: 1, y: 0 }}
+						viewport={{ once: true, margin: "-100px" }}
+						transition={{ 
+							duration: 0.8,
+							type: "spring",
+							stiffness: 100
+						}}
+						whileHover={{ scale: 1.02 }}
 						className="glass-card p-12 md:p-16 rounded-3xl text-center max-w-4xl mx-auto relative overflow-hidden border-2 border-primary/20"
 					>
-						<div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
+						<motion.div 
+							className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10"
+							animate={{
+								backgroundPosition: ["0% 0%", "100% 100%"],
+								opacity: [0.3, 0.6, 0.3]
+							}}
+							transition={{
+								duration: 8,
+								repeat: Infinity,
+								ease: "easeInOut"
+							}}
+							style={{
+								backgroundSize: "200% 200%"
+							}}
+						/>
 						<div className="relative z-10">
-							<h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-								Ready to take control of your royalties?
-							</h2>
-							<p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-								Join thousands of creators already using CreatorStream to automate their NFT royalties on Flow
-							</p>
-							<Button 
-								size="lg" 
-								variant="gradient"
-								onClick={user?.loggedIn ? () => navigate('/dashboard') : handleConnectWallet}
-								disabled={isConnecting}
-								className="group text-lg px-10 py-7 h-auto shadow-2xl shadow-primary/50"
+							<motion.h2 
+								className="text-4xl md:text-5xl font-bold mb-6 gradient-text"
+								initial={{ opacity: 0, y: 20 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ delay: 0.2 }}
 							>
-								<Wallet className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
-								{user?.loggedIn ? "Go to Dashboard" : isConnecting ? "Connecting..." : "Connect Dapper Wallet Now"}
-							</Button>
+								Ready to take control of your royalties?
+							</motion.h2>
+							<motion.p 
+								className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
+								initial={{ opacity: 0, y: 20 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ delay: 0.3 }}
+							>
+								Join thousands of creators already using CreatorStream to automate their NFT royalties on Flow
+							</motion.p>
+							<motion.div
+								initial={{ opacity: 0, scale: 0.8 }}
+								whileInView={{ opacity: 1, scale: 1 }}
+								viewport={{ once: true }}
+								transition={{ delay: 0.4 }}
+								whileHover={{ scale: 1.05, y: -3 }}
+								whileTap={{ scale: 0.95 }}
+							>
+								<Button 
+									size="lg" 
+									variant="gradient"
+									onClick={user?.loggedIn ? () => navigate('/dashboard') : handleConnectWallet}
+									disabled={isConnecting}
+									className="group text-lg px-10 py-7 h-auto shadow-2xl shadow-primary/50"
+								>
+									<motion.div
+										animate={{ rotate: [0, 15, -15, 0] }}
+										transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+									>
+										<Wallet className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
+									</motion.div>
+									{user?.loggedIn ? "Go to Dashboard" : isConnecting ? "Connecting..." : "Connect Dapper Wallet Now"}
+								</Button>
+							</motion.div>
 						</div>
 					</motion.div>
 				</div>
