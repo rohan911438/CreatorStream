@@ -4,13 +4,19 @@ import { DollarSign, TrendingUp, Clock, Activity, Calendar, Users, Trophy, Gift 
 import { Badge } from "@/components/ui/badge";
 import { formatUSD, nextPayout, mockPayouts } from "@/lib/data";
 import { useOffchainRoyalties, useAddOffchainRoyalty } from "@/lib/royalties";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useCreatePayout } from "@/lib/royalties";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCollaborators } from "@/lib/collaborators";
 
 export function DashboardOverview() {
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    setAnimated(true);
+  }, []);
+
   const stats = [
     {
       title: "Total Royalties Earned",
@@ -84,7 +90,13 @@ export function DashboardOverview() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="glass-card border-border/50 hover:scale-105 transition-transform">
+          <Card
+            key={index}
+            className={`glass-card border-border/50 hover:scale-105 transition-transform ${
+              animated ? 'animate-fade-in-up' : ''
+            }`}
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -106,7 +118,12 @@ export function DashboardOverview() {
 
       {/* Next Payout Banner */}
       {next && (
-        <Card className="glass-card border-primary/40">
+        <Card
+          className={`glass-card border-primary/40 ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '400ms' }}
+        >
           <CardContent className="p-6 flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Upcoming payout</div>
@@ -128,7 +145,12 @@ export function DashboardOverview() {
       {/* Pending Payouts and Recent Transactions */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Pending Payouts Schedule */}
-        <Card className="glass-card border-border/50">
+        <Card
+          className={`glass-card border-border/50 ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '500ms' }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
@@ -158,7 +180,12 @@ export function DashboardOverview() {
         </Card>
 
         {/* Recent Transactions */}
-        <Card className="glass-card border-border/50">
+        <Card
+          className={`glass-card border-border/50 ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '600ms' }}
+        >
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>Latest royalty payments received</CardDescription>
@@ -189,7 +216,12 @@ export function DashboardOverview() {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer">
+        <Card
+          className={`glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '700ms' }}
+        >
           <CardContent className="p-6 space-y-3">
             <h3 className="text-lg font-semibold">Withdraw Pending Royalties</h3>
             <p className="text-muted-foreground">Choose payout token and distribute automatically</p>
@@ -238,7 +270,12 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer">
+        <Card
+          className={`glass-card border-border/50 group hover:scale-105 transition-transform cursor-pointer ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '800ms' }}
+        >
           <CardContent className="p-6 space-y-3">
             <h3 className="text-lg font-semibold">Off-chain Royalty Aggregation</h3>
             <p className="text-muted-foreground">Track royalties from marketplaces without standardized fields.</p>
@@ -264,7 +301,12 @@ export function DashboardOverview() {
 
       {/* Gamified Stats */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="glass-card border-border/50">
+        <Card
+          className={`glass-card border-border/50 ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '900ms' }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary" /> Total Royalties Distributed</CardTitle>
           </CardHeader>
@@ -273,7 +315,12 @@ export function DashboardOverview() {
             <div className="text-xs text-muted-foreground mt-1">Lifetime</div>
           </CardContent>
         </Card>
-        <Card className="glass-card border-border/50">
+        <Card
+          className={`glass-card border-border/50 ${
+            animated ? 'animate-fade-in-up' : ''
+          }`}
+          style={{ animationDelay: '1000ms' }}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary" /> Total Collaborators Helped</CardTitle>
           </CardHeader>
