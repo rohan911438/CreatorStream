@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
-import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
-import { DashboardTransactions } from "@/components/dashboard/DashboardTransactions";
-import { DashboardSplits } from "@/components/dashboard/DashboardSplits";
-import { DashboardNotifications } from "@/components/dashboard/DashboardNotifications";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
-import { DashboardPayouts } from "@/components/dashboard/DashboardPayouts";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const DashboardOverview = lazy(() => import("@/components/dashboard/DashboardOverview"));
+const DashboardAnalytics = lazy(() => import("@/components/dashboard/DashboardAnalytics"));
+const DashboardTransactions = lazy(() => import("@/components/dashboard/DashboardTransactions"));
+const DashboardSplits = lazy(() => import("@/components/dashboard/DashboardSplits"));
+const DashboardNotifications = lazy(() => import("@/components/dashboard/DashboardNotifications"));
+const DashboardPayouts = lazy(() => import("@/components/dashboard/DashboardPayouts"));
 
 export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications" | "payouts";
 
@@ -40,7 +42,9 @@ const Dashboard = () => {
         <div className="flex-1 flex flex-col min-w-0">
           <DashboardTopbar />
           <main className="flex-1 overflow-auto">
-          {renderView()}
+            <Suspense fallback={<div className="p-4"><Skeleton className="h-48 w-full" /></div>}>
+              {renderView()}
+            </Suspense>
           </main>
         </div>
       </div>
