@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, BarChart3, Shield, Zap, Sparkles, Lock, Clock, Gift, Rocket, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { login, logout, subscribeToAuth } from "@/lib/dapper-wallet";
@@ -760,24 +760,24 @@ const Landing = () => {
 							<h4 className="font-semibold mb-4">Product</h4>
 							<ul className="space-y-2 text-sm text-muted-foreground">
 								<li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Roadmap</a></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Pricing</Link></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Roadmap</Link></li>
 							</ul>
 						</div>
 						<div>
 							<h4 className="font-semibold mb-4">Resources</h4>
 							<ul className="space-y-2 text-sm text-muted-foreground">
-								<li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Docs</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">About</Link></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Docs</Link></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Contact</Link></li>
 							</ul>
 						</div>
 						<div>
 							<h4 className="font-semibold mb-4">Community</h4>
 							<ul className="space-y-2 text-sm text-muted-foreground">
 								<li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Discord</a></li>
-								<li><a href="#" className="hover:text-foreground transition-colors">Twitter</a></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Discord</Link></li>
+								<li><Link to="#" className="hover:text-foreground transition-colors">Twitter</Link></li>
 							</ul>
 						</div>
 					</div>
