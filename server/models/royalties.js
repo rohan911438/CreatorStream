@@ -42,27 +42,12 @@ export async function markRoyaltyPaid(id) {
 // Aggregate unpaid royalties per creator grouped by payout_token
 export async function aggregateUnpaidByCreator(creator_id) {
   const { data, error } = await getSupabase()
-    .from('royalties')
-    .select('id, nft_name, nft_contract, marketplace, royalty_percent, sale_amount, payout_token')
-    .eq('creator_id', creator_id)
-    .eq('paid', false);
+    .rpc('aggregate_unpaid_by_creator', { creator_id_param: creator_id });
+
   if (error) throw error;
-  // Group by payout_token
-  const byToken = new Map();
-  for (const r of data) {
-    const token = r.payout_token;
-    if (!byToken.has(token)) byToken.set(token, []);
-    byToken.get(token).push(r);
-  }
-  const out = [];
-  for (const [token, rows] of byToken.entries()) {
-    let total = 0;
-    const pending_transactions = rows.map(r => {
-      const royalty = Number(r.sale_amount) * Number(r.royalty_percent) / 100;
-      total += royalty;
-      return { nft: r.nft_name || r.nft_contract, royalty: royalty.toFixed(2), marketplace: r.marketplace };
-    });
-    out.push({ token, total_unpaid: total.toFixed(2), pending_transactions });
-  }
-  return out;
+  return data.map(d => ({
+    ...d,
+    total_unpaid: d.total_unpaid.toFixed(2),
+    pending_transactions: d.pending_transactions.map(tx => ({ ...tx, royalty: tx.royalty.toFixed(2) }))
+  }));
 }
