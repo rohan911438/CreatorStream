@@ -1,4 +1,4 @@
-import { Home, TrendingUp, History, Users, Wallet, Bell, RefreshCw } from "lucide-react";
+import { Home, TrendingUp, History, Users, Wallet, Bell, RefreshCw, Cog } from "lucide-react";
 import { useState } from "react";
 import {
   Sidebar,
@@ -44,6 +44,7 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
     { id: "splits" as DashboardView, title: "Royalty Splits", icon: Users },
     { id: "notifications" as DashboardView, title: "Notifications", icon: Bell },
     { id: "payouts" as DashboardView, title: "Payouts", icon: RefreshCw },
+    { id: "settings" as DashboardView, title: "Settings", icon: Cog },
   ];
 
   const handleSwitchWallet = async () => {

@@ -10,8 +10,9 @@ const DashboardTransactions = lazy(() => import("@/components/dashboard/Dashboar
 const DashboardSplits = lazy(() => import("@/components/dashboard/DashboardSplits"));
 const DashboardNotifications = lazy(() => import("@/components/dashboard/DashboardNotifications"));
 const DashboardPayouts = lazy(() => import("@/components/dashboard/DashboardPayouts"));
+const Settings = lazy(() => import("@/pages/Settings"));
 
-export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications" | "payouts";
+export type DashboardView = "overview" | "analytics" | "transactions" | "splits" | "notifications" | "payouts" | "settings";
 
 const Dashboard = () => {
   const [currentView, setCurrentView] = useState<DashboardView>("overview");
@@ -30,6 +31,8 @@ const Dashboard = () => {
         return <DashboardNotifications />;
       case "payouts":
         return <DashboardPayouts />;
+      case "settings":
+        return <Settings />;
       default:
         return <DashboardOverview />;
     }
