@@ -30,3 +30,5 @@ PORT=8787
 # Notes:
 # - Replace all "-REPLACE" and "your-...-here" values with real secrets in a secure place (Netlify environment settings or your server's secrets manager).
 # - Only set VITE_API_URL in Netlify for frontend builds; do NOT put service role keys in client-accessible vars.
+
+# This is a placeholder comment added for a non-impactful commit.
