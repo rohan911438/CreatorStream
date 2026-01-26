@@ -80,38 +80,47 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
   };
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-64"}>
-      <div className="p-4 border-b border-border/50">
+    <Sidebar className={`${collapsed ? "w-14" : "w-64"} transition-all duration-300 ease-in-out`}>
+      <div className="p-4 border-b border-border/50 transition-all duration-300">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold gradient-text">CreatorStream</span>
+          <div className="flex items-center gap-2 animate-slide-in-left">
+            <Wallet className="h-6 w-6 text-primary sidebar-icon animate-glow-pulse" />
+            <span className="text-lg font-bold gradient-text animate-gradient-shift">CreatorStream</span>
           </div>
         )}
         {collapsed && (
-          <Wallet className="h-6 w-6 text-primary mx-auto" />
+          <Wallet className="h-6 w-6 text-primary mx-auto sidebar-icon animate-pulse-subtle" />
         )}
       </div>
 
-  <SidebarTrigger className="m-2 self-end" />
+  <SidebarTrigger className="m-2 self-end transition-all duration-300 hover:scale-110 hover:bg-primary/10 hover:text-primary active:scale-95" />
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {menuItems.map((item, index) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     onClick={() => setCurrentView(item.id)}
-                    className={
-                      currentView === item.id
-                        ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
-                        : "hover:bg-muted/50"
-                    }
+                    className={`
+                      sidebar-item animate-slide-in-scale stagger-${index + 1}
+                      ${
+                        currentView === item.id
+                          ? "bg-primary/10 text-primary font-medium border-l-2 border-primary shadow-lg glow-primary"
+                          : "hover:bg-muted/50 hover:shadow-md hover:border-l-2 hover:border-primary/50"
+                      }
+                      transition-all duration-300 ease-out
+                      hover:scale-[1.02] active:scale-[0.98]
+                    `}
                   >
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span>{item.title}</span>}
+                    <item.icon className="h-4 w-4 sidebar-icon" />
+                    {!collapsed && (
+                      <span className="transition-all duration-300 ease-out">
+                        {item.title}
+                      </span>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -123,30 +132,45 @@ export function DashboardSidebar({ currentView, setCurrentView }: DashboardSideb
 
         {/* Wallet */}
         <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel>Wallet</SidebarGroupLabel>
+          <SidebarGroupLabel className="animate-slide-in-left stagger-7">Wallet</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="glass-card p-3 rounded-lg m-2 space-y-2">
+            <div className="glass-card p-3 rounded-lg m-2 space-y-2 animate-slide-in-scale stagger-7 hover:shadow-lg transition-all duration-300 hover:border-primary/30">
               {!collapsed ? (
                 <>
-                  <div className="text-xs text-muted-foreground mb-1">Connected</div>
-                  <div className="text-sm font-mono truncate">
+                  <div className="text-xs text-muted-foreground mb-1 transition-all duration-300">Connected</div>
+                  <div className="text-sm font-mono truncate transition-all duration-300 hover:text-primary">
                     {user?.addr ? `${user.addr.slice(0, 6)}...${user.addr.slice(-4)}` : '0x742d...Ab3f'}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="glass" className="text-xs" onClick={() => handleWalletConnect('dapper')}>Dapper</Button>
-                    <Button size="sm" variant="glass" className="text-xs" onClick={() => handleWalletConnect('blocto')}>Blocto</Button>
+                    <Button 
+                      size="sm" 
+                      variant="glass" 
+                      className="text-xs transition-all duration-300 hover:scale-105 hover:bg-primary/10"
+                      onClick={() => handleWalletConnect('dapper')}
+                    >
+                      Dapper
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="glass" 
+                      className="text-xs transition-all duration-300 hover:scale-105 hover:bg-primary/10"
+                      onClick={() => handleWalletConnect('blocto')}
+                    >
+                      Blocto
+                    </Button>
                   </div>
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="w-full gap-1"
+                    className="w-full gap-1 transition-all duration-300 hover:scale-105 hover:bg-primary/10 hover:border-primary"
                     onClick={handleSwitchWallet}
                   >
-                    <RefreshCw className="h-3 w-3" /> Switch Wallet
+                    <RefreshCw className="h-3 w-3 transition-transform duration-300 hover:rotate-180" /> 
+                    Switch Wallet
                   </Button>
                 </>
               ) : (
-                <div className="w-3 h-3 bg-green-500 rounded-full mx-auto" />
+                <div className="w-3 h-3 bg-green-500 rounded-full mx-auto animate-pulse-subtle" />
               )}
             </div>
           </SidebarGroupContent>
