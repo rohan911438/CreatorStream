@@ -204,6 +204,10 @@ const Sidebar = React.forwardRef<
         )}
         {...props}
       >
+        {/* Animated accent strip along the edge of the sidebar */}
+        <div className="accent-strip hidden md:block" aria-hidden>
+          <div className="accent-strip-inner animate-vertical-move" />
+        </div>
         <div
           data-sidebar="sidebar"
           className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
